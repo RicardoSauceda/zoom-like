@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import {
+  MicActiveIcon,
   MicOffIcon,
   VideoIcon,
+  VideoOffIcon,
   ShieldIcon,
   PeopleIcon,
   ChatIcon,
@@ -20,7 +23,6 @@ import {
 interface FooterControlProps {
   icon: React.ReactNode;
   label: string;
-  iconColor?: string;
   caret?: boolean;
   badge?: number;
   active?: boolean;
@@ -37,17 +39,18 @@ function FooterControl({ icon, label, caret = false, badge, active = false, onCl
           : "text-[#f6f7fb] hover:bg-white/8"
       }`}
     >
-      <div className="flex items-center gap-1 h-5">
-        {icon}
-        {badge !== undefined && (
-          <span className="inline-flex items-center gap-1 text-[11px] text-[#f1f4f8]">
-            <span className="text-[10px] min-w-[14px] h-[14px] px-1 inline-flex items-center justify-center bg-[#111827] border border-white/8 rounded-full">
+      {/* Icon row: centered icon + caret floated right without shifting center */}
+      <div className="relative flex items-center justify-center h-5 w-full">
+        <div className="flex items-center justify-center h-5">
+          {icon}
+          {badge !== undefined && (
+            <span className="ml-0.5 text-[10px] min-w-[14px] h-[14px] px-1 inline-flex items-center justify-center bg-[#111827] border border-white/8 rounded-full text-[#f1f4f8]">
               {badge}
             </span>
-          </span>
-        )}
+          )}
+        </div>
         {caret && (
-          <ChevronDownIcon className="w-2.5 h-2.5 text-[#d5dae3]" />
+          <ChevronDownIcon className="absolute right-0 w-2.5 h-2.5 text-[#d5dae3]" />
         )}
       </div>
       <div className="text-[11px] leading-none whitespace-nowrap text-center">{label}</div>
@@ -62,6 +65,9 @@ interface FooterProps {
 }
 
 export default function Footer({ participantCount, sidebarTab, onTabChange }: FooterProps) {
+  const [micMuted, setMicMuted] = useState(false);
+  const [videoOff, setVideoOff] = useState(true);
+
   return (
     <div
       className="grid items-center px-2.5 border-t border-white/6"
@@ -73,16 +79,46 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
     >
       {/* Left */}
       <div className="flex items-center gap-0.5 justify-start">
-        <FooterControl
-          caret
-          label="Audio"
-          icon={<MicOffIcon className="w-5 h-5 text-[#ff6a6a]" />}
-        />
-        <FooterControl
-          caret
-          label="Video"
-          icon={<VideoIcon className="w-5 h-5" />}
-        />
+        {/* Mic toggle */}
+        <div
+          onClick={() => setMicMuted((v) => !v)}
+          className="min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors text-[#f6f7fb] hover:bg-white/8"
+        >
+          {/* Icon centered, caret floated right absolutely */}
+          <div className="relative flex items-center justify-center h-5 w-full">
+            <div className="flex items-center justify-center h-5">
+              {micMuted ? (
+                <MicOffIcon className="w-5 h-5 text-white" />
+              ) : (
+                <MicActiveIcon className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <ChevronDownIcon className="absolute right-0 w-2.5 h-2.5 text-[#d5dae3]" />
+          </div>
+          <div className="text-[11px] leading-none whitespace-nowrap text-center text-[#f6f7fb] mt-0.5">
+            {micMuted ? "Activar audio" : "Silenciar"}
+          </div>
+        </div>
+
+        {/* Video toggle */}
+        <div
+          onClick={() => setVideoOff((v) => !v)}
+          className="min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors text-[#f6f7fb] hover:bg-white/8"
+        >
+          <div className="relative flex items-center justify-center h-5 w-full">
+            <div className="flex items-center justify-center h-5">
+              {videoOff ? (
+                <VideoOffIcon className="w-5 h-5 text-white" />
+              ) : (
+                <VideoIcon className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <ChevronDownIcon className="absolute right-0 w-2.5 h-2.5 text-[#d5dae3]" />
+          </div>
+          <div className="text-[11px] leading-none whitespace-nowrap text-center text-[#f6f7fb] mt-0.5 truncate max-w-[65px]">
+            {videoOff ? "Iniciar vídeo" : "Detener vídeo"}
+          </div>
+        </div>
       </div>
 
       {/* Center */}
@@ -91,6 +127,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
           label="Seguridad"
           icon={<ShieldIcon className="w-5 h-5" />}
         />
+
         {/* Participantes — badge numérico superpuesto sobre el icono */}
         <div
           onClick={() => onTabChange("participants")}
@@ -108,6 +145,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
             Participantes
           </div>
         </div>
+
         <FooterControl
           label="Chat"
           active={sidebarTab === "chat"}
@@ -121,7 +159,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
         <FooterControl
           caret
           label="Compartir"
-          icon={<ShareScreenIcon className="w-5 h-5 text-[#18d26e]" />}
+          icon={<ShareScreenIcon className="w-5 h-5 text-white" />}
         />
         <FooterControl
           label="Herramientas"

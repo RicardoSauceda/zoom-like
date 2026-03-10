@@ -15,8 +15,24 @@ import HiddenActionModal from "../components/HiddenActionModal";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const INSTRUCTOR_IMG =
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80";
+/**
+ * Resolves the instructor photo URL from /public/instructores/{CURP}.{ext}.
+ * Tries jpg → jpeg → png. Returns the first one that responds 200, or "" if none.
+ */
+async function resolveInstructorImg(curp: string | null): Promise<string> {
+  if (!curp) return "";
+  const c = curp.toUpperCase().trim();
+  for (const ext of ["jpg", "jpeg", "png"]) {
+    const url = `/instructores/${c}.${ext}`;
+    try {
+      const res = await fetch(url, { method: "HEAD" });
+      if (res.ok) return url;
+    } catch {
+      // network error → skip
+    }
+  }
+  return "";
+}
 
 function buildParticipants(
   curso: CursoDetalle,
@@ -81,7 +97,7 @@ function ReunionContent() {
 
   const [state, setState] = useState<AppState>({
     title: "Cargando…",
-    speaker: { name: "Instructor", img: INSTRUCTOR_IMG },
+    speaker: { name: "Instructor", img: "" },
     participants: [],
     chat: [],
   });
@@ -98,9 +114,10 @@ function ReunionContent() {
       router.replace("/cursos");
       return;
     }
-    fetch(`/api/cursos/${encodeURIComponent(folio)}`)
-      .then((r) => r.json())
-      .then((data) => {
+    (async () => {
+      try {
+        const r = await fetch(`/api/cursos/${encodeURIComponent(folio)}`);
+        const data = await r.json();
         if (data.error) throw new Error(data.error);
         const c: CursoDetalle = data.curso;
         const i: InscritoRow[] = data.inscritos;
@@ -110,22 +127,22 @@ function ReunionContent() {
         const hostName = c.instructor_nombre?.trim() || "Instructor";
         const participants = buildParticipants(c, i);
 
+        // Resolve instructor photo from /public/instructores/{CURP}.{ext}
+        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null);
+
         setState({
           title: c.curso,
-          speaker: { name: hostName, img: INSTRUCTOR_IMG },
+          speaker: { name: hostName, img: instructorImg },
           participants,
           chat: [],
         });
 
-        // Intercalar (mezclar aleatoriamente) a los inscritos para el chat
+        // Intercalar aleatoriamente a los inscritos para el chat
         const shuffledInscritos = [...i].sort(() => Math.random() - 0.5);
-
-        // Tomar hasta 10 miembros aleatorios y crear los mensajes simulando minutos de diferencia
         setMeetingChat(
           shuffledInscritos.slice(0, 10).map((insc, idx) => {
             const minute = 5 + Math.floor(idx * 1.5);
             const minStr = minute < 10 ? `0${minute}` : minute;
-
             return {
               name: insc.alumno,
               text: "Presente",
@@ -133,9 +150,12 @@ function ReunionContent() {
             };
           })
         );
-      })
-      .catch((e) => setFetchError(e.message))
-      .finally(() => setLoadingData(false));
+      } catch (e: unknown) {
+        setFetchError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoadingData(false);
+      }
+    })();
   }, [folio, router]);
 
   // ── AI Companion ─────────────────────────────────────────────────
