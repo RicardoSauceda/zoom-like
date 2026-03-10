@@ -12,6 +12,7 @@ interface MeetingSectionProps {
   participants: Participant[];
   onToggleEditor: () => void;
   onParticipantClick: (index: number) => void;
+  onNextSpeakerPhoto?: () => void;
 }
 
 export default function MeetingSection({
@@ -20,6 +21,7 @@ export default function MeetingSection({
   participants,
   onToggleEditor,
   onParticipantClick,
+  onNextSpeakerPhoto,
 }: MeetingSectionProps) {
   const [filmstripVisible, setFilmstripVisible] = useState(true);
 
@@ -64,11 +66,19 @@ export default function MeetingSection({
           transition: "grid-template-columns 0.25s ease",
         }}
       >
-        {/* Stage — double-click to toggle filmstrip (hidden interaction) */}
+        {/* Stage — double-click to toggle filmstrip or change photo */}
         <div
           className="min-w-0 min-h-0 flex justify-center items-stretch pt-2.5 cursor-pointer select-none"
           style={{ background: "#030405" }}
-          onDoubleClick={() => setFilmstripVisible((v) => !v)}
+          onDoubleClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const isLeft = e.clientX - rect.left < rect.width / 2;
+            if (isLeft && onNextSpeakerPhoto) {
+              onNextSpeakerPhoto();
+            } else {
+              setFilmstripVisible((v) => !v);
+            }
+          }}
           title=""
         >
           <Stage speaker={speaker} />

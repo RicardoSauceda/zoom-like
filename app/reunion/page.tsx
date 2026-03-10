@@ -16,14 +16,15 @@ import HiddenActionModal from "../components/HiddenActionModal";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Resolves the instructor photo URL from /public/instructores/{CURP}.{ext}.
- * Tries jpg → jpeg → png. Returns the first one that responds 200, or "" if none.
+ * Resolves the instructor photo URL from /{CURP}/{folio_grupo}/img{index}.{ext}.
+ * Tries jpg → jpeg → png → webp. Returns the first one that responds 200, or "" if none.
  */
-async function resolveInstructorImg(curp: string | null): Promise<string> {
-  if (!curp) return "";
+async function resolveInstructorImg(curp: string | null, folio: string | null, index: number): Promise<string> {
+  if (!curp || !folio) return "";
   const c = curp.toUpperCase().trim();
-  for (const ext of ["jpg", "jpeg", "png"]) {
-    const url = `/instructores/${c}.${ext}`;
+  const f = folio.trim();
+  for (const ext of ["jpg", "jpeg", "png", "webp"]) {
+    const url = `/instructores/${c}/${f}/img${index}.${ext}`;
     try {
       const res = await fetch(url, { method: "HEAD" });
       if (res.ok) return url;
@@ -107,6 +108,7 @@ function ReunionContent() {
   const [sidebarTab, setSidebarTab] = useState<"participants" | "chat">("participants");
   const [meetingChat, setMeetingChat] = useState<ChatMessage[]>(MEETING_CHAT_MOCK);
   const [hiddenActionIdx, setHiddenActionIdx] = useState<number | null>(null);
+  const [photoIndex, setPhotoIndex] = useState<number>(1);
 
   // ── Cargar datos del curso desde la API ──────────────────────────
   useEffect(() => {
@@ -127,8 +129,8 @@ function ReunionContent() {
         const hostName = c.instructor_nombre?.trim() || "Instructor";
         const participants = buildParticipants(c, i);
 
-        // Resolve instructor photo from /public/instructores/{CURP}.{ext}
-        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null);
+        // Resolve instructor photo from /{CURP}/{folio}/img1
+        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null, c.folio_grupo, 1);
 
         setState({
           title: c.curso,
@@ -201,6 +203,18 @@ function ReunionContent() {
       { name: "Tú", text, self: true, time: getTimeNow() },
     ]);
   }, []);
+
+  // ── Fotos de instructor ──────────────────────────────────────────
+  const handleNextSpeakerPhoto = useCallback(async () => {
+    if (!curso) return;
+    const nextIdx = photoIndex >= 3 ? 1 : photoIndex + 1;
+    setPhotoIndex(nextIdx);
+    const newImg = await resolveInstructorImg(curso.curp_instructor ?? null, curso.folio_grupo, nextIdx);
+    setState((prev) => ({
+      ...prev,
+      speaker: { ...prev.speaker, img: newImg },
+    }));
+  }, [curso, photoIndex]);
 
   // ── Editor ───────────────────────────────────────────────────────
   const handleApplyEditor = useCallback(
@@ -354,6 +368,7 @@ function ReunionContent() {
           participants={state.participants}
           onToggleEditor={() => setEditorOpen(true)}
           onParticipantClick={handleEditParticipant}
+          onNextSpeakerPhoto={handleNextSpeakerPhoto}
         />
 
         <aside

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Speaker } from "../types";
 
 interface StageProps {
@@ -15,9 +15,12 @@ function getInitials(name: string): string {
 }
 
 export default function Stage({ speaker }: StageProps) {
-  // speaker.img is either a CURP-based path like /instructores/CURP.jpg
-  // or the legacy Unsplash URL. We try to load it and fall back to initials.
+  // speaker.img is either a CURP/folio-based path or a legacy URL.
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    if (speaker.img) setImgError(false);
+  }, [speaker.img]);
 
   const showPhoto = speaker.img && !imgError;
 
