@@ -412,6 +412,21 @@ function ReunionContent() {
             ]);
             setHiddenActionIdx(null);
           }}
+          onRemove={() => {
+            setState((prev) => {
+              const updated = prev.participants.filter((_, idx) => idx !== hiddenActionIdx);
+              // Si el ponente principal es el que se expulsa, volvemos a poner al instructor, u otro
+              const isSpeaker = prev.speaker.name === state.participants[hiddenActionIdx!].name;
+              return { 
+                ...prev, 
+                participants: updated,
+                speaker: isSpeaker && updated.length > 0 
+                  ? { name: updated[0].name, img: updated[0].img } 
+                  : prev.speaker
+              };
+            });
+            setHiddenActionIdx(null);
+          }}
         />
       )}
     </div>

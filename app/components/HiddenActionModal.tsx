@@ -9,6 +9,7 @@ interface HiddenActionModalProps {
   onClose: () => void;
   onToggleRaise: () => void;
   onSendMessage: (text: string) => void;
+  onRemove: () => void;
 }
 
 export default function HiddenActionModal({
@@ -18,8 +19,9 @@ export default function HiddenActionModal({
   onClose,
   onToggleRaise,
   onSendMessage,
+  onRemove,
 }: HiddenActionModalProps) {
-  const [tab, setTab] = useState<"raise" | "chat">("raise");
+  const [tab, setTab] = useState<"raise" | "chat" | "remove">("raise");
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when changing to chat tab
@@ -73,27 +75,38 @@ export default function HiddenActionModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex px-4 pt-3 gap-3 border-b border-[#eceff3] bg-white relative">
+        <div className="flex px-4 pt-3 gap-3 border-b border-[#eceff3] bg-white relative overflow-x-auto hide-scrollbar">
           <button
             onClick={() => setTab("raise")}
-            className={`px-1 py-1.5 text-xs font-semibold transition-colors relative ${
+            className={`px-1 py-1.5 text-xs font-semibold transition-colors relative whitespace-nowrap ${
               tab === "raise" ? "text-[#0e71eb]" : "text-[#6b7280] hover:text-[#374151]"
             }`}
           >
             Reacción (Mano)
             {tab === "raise" && (
-              <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#0e71eb] rounded-t-sm" />
+              <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-[#0e71eb] rounded-t-sm" />
             )}
           </button>
           <button
             onClick={() => setTab("chat")}
-            className={`px-1 py-1.5 text-xs font-semibold transition-colors relative ${
+            className={`px-1 py-1.5 text-xs font-semibold transition-colors relative whitespace-nowrap ${
               tab === "chat" ? "text-[#0e71eb]" : "text-[#6b7280] hover:text-[#374151]"
             }`}
           >
             Mensaje Falso
             {tab === "chat" && (
-              <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#0e71eb] rounded-t-sm" />
+              <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-[#0e71eb] rounded-t-sm" />
+            )}
+          </button>
+          <button
+            onClick={() => setTab("remove")}
+            className={`px-1 py-1.5 text-xs font-semibold transition-colors relative whitespace-nowrap ${
+              tab === "remove" ? "text-[#ef4444]" : "text-[#6b7280] hover:text-[#ef4444]"
+            }`}
+          >
+            Expulsar
+            {tab === "remove" && (
+              <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-[#ef4444] rounded-t-sm" />
             )}
           </button>
         </div>
@@ -117,7 +130,7 @@ export default function HiddenActionModal({
                 {hasRaise ? "Bajar la mano" : "Levantar la mano"}
               </button>
             </div>
-          ) : (
+          ) : tab === "chat" ? (
             <div className="flex flex-col gap-3">
               <p className="text-[11px] text-[#6b7280] leading-snug">
                 El mensaje aparecerá en el chat grupal con el nombre de <strong>{participantName}</strong> de forma silenciosa.
@@ -133,6 +146,18 @@ export default function HiddenActionModal({
                 className="self-end px-4 py-2 bg-[#0e71eb] text-white text-[13px] font-semibold rounded-lg hover:bg-[#0059cc] shadow-sm transition-colors mt-1"
               >
                 Inyectar en Chat
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4 py-2">
+              <p className="text-xs text-[#6b7280] text-center leading-relaxed">
+                Remueve a este usuario de la lista de participantes de inmediato.
+              </p>
+              <button
+                onClick={onRemove}
+                className="w-full py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2 bg-[#fee2e2] border border-[#fca5a5] text-[#b91c1c] hover:bg-[#fca5a5]"
+              >
+                Expulsar Participante
               </button>
             </div>
           )}
