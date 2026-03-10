@@ -18,6 +18,7 @@ import {
   InfoIcon,
   MoreHorizontalIcon,
   ChevronDownIcon,
+  EndMeetingIcon,
 } from "./Icons";
 
 interface FooterControlProps {
@@ -123,10 +124,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
 
       {/* Center */}
       <div className="flex items-center gap-0.5 justify-center">
-        <FooterControl
-          label="Seguridad"
-          icon={<ShieldIcon className="w-5 h-5" />}
-        />
+
 
         {/* Participantes — badge numérico superpuesto sobre el icono */}
         <div
@@ -162,8 +160,8 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
           icon={<ShareScreenIcon className="w-5 h-5 text-white" />}
         />
         <FooterControl
-          label="Herramientas"
-          icon={<HostToolsIcon className="w-5 h-5" />}
+          label="Seguridad"
+          icon={<ShieldIcon className="w-5 h-5" />}
         />
         <FooterControl
           label="AI Companion"
@@ -188,10 +186,17 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
       </div>
 
       {/* Right */}
-      <div className="flex items-center justify-end">
-        <button className="bg-transparent text-[#ff4d4f] border border-white/8 rounded-lg px-4 py-[9px] text-[13px] font-semibold cursor-pointer hover:bg-white/5 transition-colors">
-          Terminar
-        </button>
+      <div className="flex items-center justify-end pr-2">
+        <div className="min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors text-[#ff4d4f] hover:bg-[#ff4d4f]/10">
+          <div className="relative flex items-center justify-center h-6 w-full">
+            <div className="flex items-center justify-center h-6">
+              <EndMeetingIcon className="w-[22px] h-[22px] text-[#ff4d4f]" />
+            </div>
+          </div>
+          <div className="text-[11px] font-medium leading-none whitespace-nowrap text-center text-[#ff4d4f]">
+            Terminar
+          </div>
+        </div>
       </div>
     </div>
   );
