@@ -232,6 +232,32 @@ function ReunionContent() {
     [state.participants]
   );
 
+  const handleHiddenAction = useCallback(
+    (index: number) => {
+      const p = state.participants[index];
+      const option = window.prompt(
+        `Acción oculta para ${p.name}:\n1. Levantar/Bajar mano\n2. Enviar mensaje de chat`,
+        "1"
+      );
+      if (option === "1") {
+        setState((prev) => {
+          const updated = [...prev.participants];
+          updated[index] = { ...p, raise: !p.raise };
+          return { ...prev, participants: updated };
+        });
+      } else if (option === "2") {
+        const text = window.prompt(`Mensaje falso de ${p.name}:`);
+        if (text) {
+          setMeetingChat((prev) => [
+            ...prev,
+            { name: p.name, text, time: getTimeNow(), self: false },
+          ]);
+        }
+      }
+    },
+    [state.participants]
+  );
+
   const sidebarRows =
     sidebarTab === "chat" ? "1fr" : aiOpen ? "316px 1fr" : "1fr";
 
@@ -353,6 +379,7 @@ function ReunionContent() {
               <ParticipantsPanel
                 participants={state.participants}
                 onEditParticipant={handleEditParticipant}
+                onHiddenAction={handleHiddenAction}
               />
             </>
           )}

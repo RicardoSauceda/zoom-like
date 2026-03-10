@@ -8,6 +8,7 @@ import { MoreVerticalIcon, CloseIcon, StopIcon, HandRaiseIcon, MicIcon, MicOffIc
 interface ParticipantsPanelProps {
   participants: Participant[];
   onEditParticipant: (index: number) => void;
+  onHiddenAction?: (index: number) => void;
 }
 
 function ParticipantAvatar({ participant }: { participant: Participant }) {
@@ -32,6 +33,7 @@ function ParticipantAvatar({ participant }: { participant: Participant }) {
 export default function ParticipantsPanel({
   participants,
   onEditParticipant,
+  onHiddenAction,
 }: ParticipantsPanelProps) {
   const [search, setSearch] = useState("");
 
@@ -82,6 +84,10 @@ export default function ParticipantsPanel({
             <div
               key={p.name + index}
               onClick={() => onEditParticipant(originalIndex)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                onHiddenAction?.(originalIndex);
+              }}
               className="grid gap-2.5 items-center px-3.5 py-2.5 cursor-pointer hover:bg-[#f8fafc] transition-colors"
               style={{ gridTemplateColumns: "32px 1fr auto" }}
             >
