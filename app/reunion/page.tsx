@@ -11,6 +11,7 @@ import ParticipantsPanel from "../components/ParticipantsPanel";
 import MeetingChatPanel from "../components/MeetingChatPanel";
 import Footer from "../components/Footer";
 import EditorModal from "../components/EditorModal";
+import HiddenActionModal from "../components/HiddenActionModal";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,7 @@ function ReunionContent() {
   const [aiOpen, setAiOpen] = useState(true);
   const [sidebarTab, setSidebarTab] = useState<"participants" | "chat">("participants");
   const [meetingChat, setMeetingChat] = useState<ChatMessage[]>(MEETING_CHAT_MOCK);
+  const [hiddenActionIdx, setHiddenActionIdx] = useState<number | null>(null);
 
   // ── Cargar datos del curso desde la API ──────────────────────────
   useEffect(() => {
@@ -234,28 +236,9 @@ function ReunionContent() {
 
   const handleHiddenAction = useCallback(
     (index: number) => {
-      const p = state.participants[index];
-      const option = window.prompt(
-        `Acción oculta para ${p.name}:\n1. Levantar/Bajar mano\n2. Enviar mensaje de chat`,
-        "1"
-      );
-      if (option === "1") {
-        setState((prev) => {
-          const updated = [...prev.participants];
-          updated[index] = { ...p, raise: !p.raise };
-          return { ...prev, participants: updated };
-        });
-      } else if (option === "2") {
-        const text = window.prompt(`Mensaje falso de ${p.name}:`);
-        if (text) {
-          setMeetingChat((prev) => [
-            ...prev,
-            { name: p.name, text, time: getTimeNow(), self: false },
-          ]);
-        }
-      }
+      setHiddenActionIdx(index);
     },
-    [state.participants]
+    []
   );
 
   const sidebarRows =
@@ -401,6 +384,36 @@ function ReunionContent() {
         onApply={handleApplyEditor}
         onAddParticipant={handleAddParticipant}
       />
+
+      {hiddenActionIdx !== null && state.participants[hiddenActionIdx] && (
+        <HiddenActionModal
+          open={true}
+          participantName={state.participants[hiddenActionIdx].name}
+          hasRaise={state.participants[hiddenActionIdx].raise}
+          onClose={() => setHiddenActionIdx(null)}
+          onToggleRaise={() => {
+            setState((prev) => {
+              const updated = [...prev.participants];
+              if (updated[hiddenActionIdx]) {
+                updated[hiddenActionIdx] = { 
+                  ...updated[hiddenActionIdx], 
+                  raise: !updated[hiddenActionIdx].raise 
+                };
+              }
+              return { ...prev, participants: updated };
+            });
+            setHiddenActionIdx(null);
+          }}
+          onSendMessage={(text) => {
+            const name = state.participants[hiddenActionIdx]?.name || "Desconocido";
+            setMeetingChat((prev) => [
+              ...prev,
+              { name, text, time: getTimeNow(), self: false },
+            ]);
+            setHiddenActionIdx(null);
+          }}
+        />
+      )}
     </div>
   );
 }
