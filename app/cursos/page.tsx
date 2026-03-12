@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CursoRow } from "../types";
 
 // ── Paleta de colores por status ──────────────────────────────────────────────
@@ -43,8 +43,12 @@ function calcDuration(inicio: string, termino: string) {
 
 const PAGE_SIZE = 60;
 
-export default function CursosPage() {
+function CursosContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const iniParam = searchParams.get("ini");
+  const finParam = searchParams.get("fin");
+
   const [cursos, setCursos] = useState<CursoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +83,7 @@ export default function CursosPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return cursos.filter((c) => {
+    const res = cursos.filter((c) => {
       const matchSearch =
         !q ||
         c.curso.toLowerCase().includes(q) ||
@@ -91,10 +95,22 @@ export default function CursosPage() {
         filterStatus === "TODOS" || c.status_curso === filterStatus;
       return matchSearch && matchUnidad && matchStatus;
     });
-  }, [cursos, search, filterUnidad, filterStatus]);
 
-  // Slice para el render: solo `page * PAGE_SIZE` elementos
-  const visible = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
+    if (iniParam && finParam) {
+      const ini = parseInt(iniParam, 10);
+      const fin = parseInt(finParam, 10);
+      if (!isNaN(ini) && !isNaN(fin)) {
+        return res.slice(Math.max(0, ini - 1), fin);
+      }
+    }
+    return res;
+  }, [cursos, search, filterUnidad, filterStatus, iniParam, finParam]);
+
+  // Slice para el render: solo `page * PAGE_SIZE` elementos, a menos que se usen ini/fin
+  const visible = useMemo(() => {
+    if (iniParam && finParam) return filtered;
+    return filtered.slice(0, page * PAGE_SIZE);
+  }, [filtered, page, iniParam, finParam]);
   const hasMore = visible.length < filtered.length;
 
   const handleJoin = (folio: string) => {
@@ -314,6 +330,14 @@ export default function CursosPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function CursosPage() {
+  return (
+    <Suspense>
+      <CursosContent />
+    </Suspense>
   );
 }
 
@@ -543,6 +567,11 @@ function CursoCard({
             <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>
               {curso.instructor_nombre}
             </div>
+            {curso.curp_instructor && (
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 2, fontFamily: "monospace", letterSpacing: "0.02em" }}>
+                {curso.curp_instructor}
+              </div>
+            )}
           </div>
         </div>
       )}

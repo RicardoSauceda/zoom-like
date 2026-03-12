@@ -1,0 +1,26 @@
+Atuomatiazción de captura de pantallas en este proyecto Zoom-like
+
+Primera parte:
+1. Debe poder navegar en el grid de la sesiónes y cargar mas si lo necesita
+2. Regresar al grid de sesiones al acabar la segunda parte para pasar a la siguiente sala
+
+Segunda parte:
+1. Necesito que se ingrese a la salas de reunion.
+2. Tomen una captura de pantalla.
+3. Doble-Click sobre el lado izquierdo de la MeetiningSection para cambiar la foto del ponente.
+4. Mostrar el chat de los participantes donde digan presente.
+5. Tomen una captura de pantalla.
+6. Doble-Click sobre el lado izquierdo de la MeetiningSection para cambiar la foto del ponente.
+7. Nuevamente mostrar la sidebar de los participantes.
+8. Tomen una captura de pantalla.
+
+
+- Debe ser Headless
+- Debe tomar la caputura del contenido de la ventana mas no la ventana completa
+- Se debe poder indicar la resolucion de la captura deseada
+
+Las capturas deben quedar en un directorio con el formato:
+/capturas/{curp}/{folio_grupo}/img1.jpg
+/capturas/{curp}/{folio_grupo}/img2.jpg
+/capturas/{curp}/{folio_grupo}/img3.jpg
+

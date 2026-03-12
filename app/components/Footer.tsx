@@ -28,12 +28,14 @@ interface FooterControlProps {
   badge?: number;
   active?: boolean;
   onClick?: () => void;
+  testId?: string;
 }
 
-function FooterControl({ icon, label, caret = false, badge, active = false, onClick }: FooterControlProps) {
+function FooterControl({ icon, label, caret = false, badge, active = false, onClick, testId }: FooterControlProps) {
   return (
     <div
       onClick={onClick}
+      data-testid={testId}
       className={`min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors ${
         active
           ? "bg-white/12 text-white"
@@ -63,11 +65,14 @@ interface FooterProps {
   participantCount: number;
   sidebarTab: "participants" | "chat";
   onTabChange: (tab: "participants" | "chat") => void;
+  micMuted: boolean;
+  onMicToggle: () => void;
+  videoOff: boolean;
+  onVideoToggle: () => void;
 }
 
-export default function Footer({ participantCount, sidebarTab, onTabChange }: FooterProps) {
-  const [micMuted, setMicMuted] = useState(false);
-  const [videoOff, setVideoOff] = useState(true);
+export default function Footer({ participantCount, sidebarTab, onTabChange, micMuted, onMicToggle, videoOff, onVideoToggle }: FooterProps) {
+
 
   return (
     <div
@@ -82,7 +87,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
       <div className="flex items-center gap-0.5 justify-start">
         {/* Mic toggle */}
         <div
-          onClick={() => setMicMuted((v) => !v)}
+          onClick={onMicToggle}
           className="min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors text-[#f6f7fb] hover:bg-white/8"
         >
           {/* Icon centered, caret floated right absolutely */}
@@ -103,7 +108,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
 
         {/* Video toggle */}
         <div
-          onClick={() => setVideoOff((v) => !v)}
+          onClick={onVideoToggle}
           className="min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors text-[#f6f7fb] hover:bg-white/8"
         >
           <div className="relative flex items-center justify-center h-5 w-full">
@@ -128,6 +133,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
 
         {/* Participantes — badge numérico superpuesto sobre el icono */}
         <div
+          data-testid="btn-participants"
           onClick={() => onTabChange("participants")}
           className={`min-w-[74px] h-16 flex flex-col items-center justify-center gap-1 rounded-md cursor-pointer px-1.5 transition-colors ${
             sidebarTab === "participants" ? "bg-white/12 text-white" : "text-[#f6f7fb] hover:bg-white/8"
@@ -149,6 +155,7 @@ export default function Footer({ participantCount, sidebarTab, onTabChange }: Fo
           active={sidebarTab === "chat"}
           onClick={() => onTabChange("chat")}
           icon={<ChatIcon className="w-5 h-5" />}
+          testId="btn-chat"
         />
         <FooterControl
           label="Reaccionar"

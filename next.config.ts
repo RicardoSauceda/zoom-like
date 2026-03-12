@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  devIndicators: false, // Opcional, pero para Next 15+ se puede usar false para quitar varios.
 };
 
 export default nextConfig;

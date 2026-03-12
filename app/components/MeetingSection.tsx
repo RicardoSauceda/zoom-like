@@ -23,7 +23,7 @@ export default function MeetingSection({
   onParticipantClick,
   onNextSpeakerPhoto,
 }: MeetingSectionProps) {
-  const [filmstripVisible, setFilmstripVisible] = useState(true);
+  const [filmstripVisible, setFilmstripVisible] = useState(false);
 
   return (
     <section
@@ -68,6 +68,7 @@ export default function MeetingSection({
       >
         {/* Stage — double-click to toggle filmstrip or change photo */}
         <div
+          data-testid="meeting-stage"
           className="min-w-0 min-h-0 flex justify-center items-stretch pt-2.5 cursor-pointer select-none"
           style={{ background: "#030405" }}
           onDoubleClick={(e) => {

@@ -55,17 +55,17 @@ function buildParticipants(
     color: "#6366f1",
   });
 
-  // 2. Yo (usuario actual de ICATECH)
-  participants.push({
-    name: "ICATECH",
-    role: "(yo)",
-    img: "",
-    muted: false,
-    video: false,
-    speaking: false,
-    raise: false,
-    color: "#111827",
-  });
+  // // 2. Yo (usuario actual de ICATECH)
+  // participants.push({
+  //   name: "ICATECH",
+  //   role: "(yo)",
+  //   img: "",
+  //   muted: false,
+  //   video: false,
+  //   speaking: false,
+  //   raise: false,
+  //   color: "#111827",
+  // });
 
   // 3. Inscritos
   inscritos.slice(0, 30).forEach((insc, idx) => {
@@ -104,7 +104,7 @@ function ReunionContent() {
   });
 
   const [editorOpen, setEditorOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"participants" | "chat">("participants");
   const [meetingChat, setMeetingChat] = useState<ChatMessage[]>(MEETING_CHAT_MOCK);
   const [hiddenActionIdx, setHiddenActionIdx] = useState<number | null>(null);
@@ -408,6 +408,26 @@ function ReunionContent() {
         participantCount={state.participants.length}
         sidebarTab={sidebarTab}
         onTabChange={setSidebarTab}
+        micMuted={state.participants[0]?.muted ?? false}
+        onMicToggle={() => {
+          setState((prev) => {
+            const updated = [...prev.participants];
+            if (updated[0]) {
+              updated[0] = { ...updated[0], muted: !updated[0].muted };
+            }
+            return { ...prev, participants: updated };
+          });
+        }}
+        videoOff={!(state.participants[0]?.video ?? false)}
+        onVideoToggle={() => {
+          setState((prev) => {
+            const updated = [...prev.participants];
+            if (updated[0]) {
+              updated[0] = { ...updated[0], video: !updated[0].video };
+            }
+            return { ...prev, participants: updated };
+          });
+        }}
       />
 
       <EditorModal

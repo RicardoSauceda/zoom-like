@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Participant } from "../types";
 import { getInitials } from "../data";
-import { MoreVerticalIcon, CloseIcon, StopIcon, HandRaiseIcon, MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from "./Icons";
+import { MoreVerticalIcon, CloseIcon, StopIcon, HandRaiseIcon, MicIcon, MicOffIcon, MicActiveIcon, VideoIcon, VideoOffIcon } from "./Icons";
 
 interface ParticipantsPanelProps {
   participants: Participant[];
@@ -109,6 +109,11 @@ export default function ParticipantsPanel({
                   <MicOffIcon
                     className="w-4 h-4 text-[#ef4444]"
                     aria-label="Microphone off"
+                  />
+                ) : originalIndex === 0 ? (
+                  <MicActiveIcon
+                    className="w-4 h-4 text-[#6b7280]"
+                    aria-label="Microphone on"
                   />
                 ) : (
                   <MicIcon
