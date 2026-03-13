@@ -16,15 +16,18 @@ import HiddenActionModal from "../components/HiddenActionModal";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Resolves the instructor photo URL from /{CURP}/{folio_grupo}/img{index}.{ext}.
+ * Resolves the instructor photo URL from /{CURP}/{folio_grupo}_{curso}/img{index}.{ext}.
  * Tries jpg → jpeg → png → webp. Returns the first one that responds 200, or "" if none.
  */
-async function resolveInstructorImg(curp: string | null, folio: string | null, index: number): Promise<string> {
-  if (!curp || !folio) return "";
+async function resolveInstructorImg(curp: string | null, folio: string | null, cursoNombre: string | null, index: number): Promise<string> {
+  if (!curp || !folio || !cursoNombre) return "";
   const c = curp.toUpperCase().trim();
   const f = folio.trim();
+  // Sanitización simple para evitar caracteres inválidos en rutas
+  const cleanCurso = cursoNombre.trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
+  
   for (const ext of ["jpg", "jpeg", "png", "webp"]) {
-    const url = `/instructores/${c}/${f}/img${index}.${ext}`;
+    const url = `/instructores/${c}/${f}_${cleanCurso}/img${index}.${ext}`;
     try {
       const res = await fetch(url, { method: "HEAD" });
       if (res.ok) return url;
@@ -129,8 +132,8 @@ function ReunionContent() {
         const hostName = c.instructor_nombre?.trim() || "Instructor";
         const participants = buildParticipants(c, i);
 
-        // Resolve instructor photo from /{CURP}/{folio}/img1
-        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null, c.folio_grupo, 1);
+        // Resolve instructor photo from /{CURP}/{folio}_{curso}/img1
+        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null, c.folio_grupo, c.curso, 1);
 
         setState({
           title: c.curso,
@@ -209,7 +212,7 @@ function ReunionContent() {
     if (!curso) return;
     const nextIdx = photoIndex >= 3 ? 1 : photoIndex + 1;
     setPhotoIndex(nextIdx);
-    const newImg = await resolveInstructorImg(curso.curp_instructor ?? null, curso.folio_grupo, nextIdx);
+    const newImg = await resolveInstructorImg(curso.curp_instructor ?? null, curso.folio_grupo, curso.curso, nextIdx);
     setState((prev) => ({
       ...prev,
       speaker: { ...prev.speaker, img: newImg },

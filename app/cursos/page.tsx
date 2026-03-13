@@ -120,6 +120,35 @@ function CursosContent() {
     }, 600);
   };
 
+  const handleDownloadStructure = async () => {
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const root = zip.folder("instructores");
+      
+      if (root) {
+        cursos.forEach((c) => {
+          const curp = (c.curp_instructor || "SIN_CURP").toUpperCase().trim();
+          const folio = (c.folio_grupo || "SIN_FOLIO").trim();
+          const cleanCurso = (c.curso || "SIN_NOMBRE").trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
+          
+          root.folder(`${curp}/${folio}_${cleanCurso}`);
+        });
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "estructura_instructores.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error generating ZIP:", err);
+      alert("No se pudo generar el archivo ZIP.");
+    }
+  };
+
   return (
     <div
       style={{
@@ -170,8 +199,40 @@ function CursosContent() {
           </p>
         </div>
 
-        {/* Stats badge */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+        {/* Actions */}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
+          <button
+            onClick={handleDownloadStructure}
+            title="Descargar estructura de carpetas"
+            style={{
+              padding: "10px 18px",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10,
+              color: "#e2e8f0",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#3b82f6";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.15)";
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Estructura ZIP
+          </button>
+
           <StatBadge label="Grupos" value={cursos.length} color="#3b82f6" />
           <StatBadge
             label="Inscritos"
