@@ -202,6 +202,38 @@ function CursosContent() {
         {/* Actions */}
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
           <button
+            onClick={() => router.push("/instructores")}
+            title="Ir al directorio de instructores"
+            style={{
+              padding: "10px 18px",
+              background: "rgba(99,102,241,0.1)",
+              border: "1px solid rgba(99,102,241,0.2)",
+              borderRadius: 10,
+              color: "#a5b4fc",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(99,102,241,0.2)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#6366f1";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(99,102,241,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(99,102,241,0.2)";
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            Directorio
+          </button>
+
+          <button
             onClick={handleDownloadStructure}
             title="Descargar estructura de carpetas"
             style={{
