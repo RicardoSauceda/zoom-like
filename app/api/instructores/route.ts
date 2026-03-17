@@ -15,7 +15,8 @@ export async function GET() {
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'folio_grupo', tc.folio_grupo,
-            'curso', tc.curso
+            'curso', tc.curso,
+            'tcapacitacion', tc.tcapacitacion
           )
         ) AS cursos_json
       FROM tbl_cursos tc

@@ -9,6 +9,7 @@ interface InstructorData {
   cursos_json: {
     folio_grupo: string;
     curso: string;
+    tcapacitacion?: string;
   }[];
 }
 
@@ -34,17 +35,23 @@ function InstructoresContent() {
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
-      const root = zip.folder("instructores");
+      const curpTag = ins.curp.toUpperCase().trim();
+      const rootName = `FOTOS_${curpTag}`;
+      const root = zip.folder(rootName);
       
       if (root) {
-        const curpFolder = root.folder(ins.curp.toUpperCase().trim());
-        if (curpFolder) {
-          ins.cursos_json.forEach((c) => {
-            const folio = (c.folio_grupo || "SIN_FOLIO").trim();
-            const cleanCurso = (c.curso || "SIN_NOMBRE").trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
-            curpFolder.folder(`${folio}_${cleanCurso}`);
-          });
-        }
+        ins.cursos_json.forEach((c) => {
+          const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA") 
+            ? "A_DISTANCIA" 
+            : "PRESENCIAL";
+            
+          const folio = (c.folio_grupo || "SIN_FOLIO").trim();
+          const cleanCurso = (c.curso || "SIN_NOMBRE").trim()
+            .replace(/[\/\\?%*:|"<>]/g, "_")
+            .substring(0, 80);
+          
+          root.folder(`${modalidad}_${folio}_${cleanCurso}`);
+        });
       }
 
       const content = await zip.generateAsync({ type: "blob" });

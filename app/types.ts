@@ -43,6 +43,7 @@ export interface CursoRow {
   total_inscritos: string;
   hombres: number;
   mujeres: number;
+  tcapacitacion?: string | null;
 }
 
 export interface InscritoRow {
@@ -68,4 +69,5 @@ export interface CursoDetalle {
   curp_instructor: string | null;
   hombre: number;
   mujer: number;
+  tcapacitacion?: string | null;
 }

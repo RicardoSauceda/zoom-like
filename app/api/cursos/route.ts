@@ -17,6 +17,7 @@ export async function GET() {
       total_inscritos: string;
       hombres: number;
       mujeres: number;
+      tcapacitacion: string | null;
     }>(`
       SELECT
         tc.folio_grupo,
@@ -30,6 +31,7 @@ export async function GET() {
         tc.curp            AS curp_instructor,
         tc.hombre          AS hombres,
         tc.mujer           AS mujeres,
+        tc.tcapacitacion,
         COUNT(ti.id)::text AS total_inscritos
       FROM tbl_cursos tc
       LEFT JOIN tbl_inscripcion ti ON tc.folio_grupo = ti.folio_grupo
@@ -38,7 +40,7 @@ export async function GET() {
       GROUP BY
         tc.folio_grupo, tc.status_curso, tc.curso,
         tc.unidad, tc.inicio, tc.termino, tc.horas,
-        tc.nombre, tc.curp, tc.hombre, tc.mujer
+        tc.nombre, tc.curp, tc.hombre, tc.mujer, tc.tcapacitacion
       ORDER BY MIN(tc.created_at) DESC
     `);
 

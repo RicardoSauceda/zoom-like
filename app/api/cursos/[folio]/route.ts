@@ -21,6 +21,7 @@ export async function GET(
       curp_instructor: string | null;
       hombre: number;
       mujer: number;
+      tcapacitacion: string | null;
     }>(
       `SELECT
         tc.folio_grupo,
@@ -32,7 +33,8 @@ export async function GET(
         tc.nombre   AS instructor_nombre,
         tc.curp     AS curp_instructor,
         tc.hombre,
-        tc.mujer
+        tc.mujer,
+        tc.tcapacitacion
        FROM tbl_cursos tc
        WHERE tc.folio_grupo = $1
        LIMIT 1`,

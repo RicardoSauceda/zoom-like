@@ -124,17 +124,21 @@ function CursosContent() {
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
-      const root = zip.folder("instructores");
       
-      if (root) {
-        cursos.forEach((c) => {
-          const curp = (c.curp_instructor || "SIN_CURP").toUpperCase().trim();
-          const folio = (c.folio_grupo || "SIN_FOLIO").trim();
-          const cleanCurso = (c.curso || "SIN_NOMBRE").trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
+      cursos.forEach((c) => {
+        const curp = (c.curp_instructor || "SIN_CURP").toUpperCase().trim();
+        const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA") 
+          ? "A_DISTANCIA" 
+          : "PRESENCIAL";
           
-          root.folder(`${curp}/${folio}_${cleanCurso}`);
-        });
-      }
+        const folio = (c.folio_grupo || "SIN_FOLIO").trim();
+        const cleanCurso = (c.curso || "SIN_NOMBRE").trim()
+          .replace(/[\/\\?%*:|"<>]/g, "_")
+          .substring(0, 80);
+        
+        // Structure: FOTOS_{CURP}/{MODALIDAD}_{FOLIO}_{CURSO}
+        zip.folder(`FOTOS_${curp}/${modalidad}_${folio}_${cleanCurso}`);
+      });
 
       const content = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(content);
