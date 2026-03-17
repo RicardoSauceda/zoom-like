@@ -36,11 +36,10 @@ export default function Stage({ speaker }: StageProps) {
           onError={() => setImgError(true)}
         />
       ) : (
-        /* Fallback: large initials avatar */
         <div className="w-full h-full flex items-center justify-center bg-[rgb(26,26,26)]">
           <div
-            className="w-36 h-36 rounded-full flex items-center justify-center text-5xl font-bold text-white select-none shadow-lg"
-            style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
+            className="w-[100px] h-[100px] rounded-lg flex items-center justify-center text-[40px] font-medium text-white select-none"
+            style={{ background: "#719E37" }} // Use a solid green color closer to original Zoom for testing, or use actual speaker color
           >
             {getInitials(speaker.name)}
           </div>

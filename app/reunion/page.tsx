@@ -356,17 +356,16 @@ function ReunionContent() {
   // ── Sala de reunión ──────────────────────────────────────────────
   return (
     <div
-      className="w-screen h-screen overflow-hidden grid"
+      className="w-screen h-screen overflow-hidden flex"
       style={{
         background: "#2b2b2b",
-        gridTemplateRows: "39px 1fr 66px",
         fontFamily: 'var(--font-lato),"Lato","Helvetica Neue",Helvetica,Arial,sans-serif',
         WebkitFontSmoothing: "antialiased",
       }}
     >
-      <Topbar />
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        <Topbar />
 
-      <div className="min-h-0 grid" style={{ gridTemplateColumns: "minmax(0,1fr) 334px" }}>
         <MeetingSection
           title={state.title}
           speaker={state.speaker}
@@ -376,10 +375,37 @@ function ReunionContent() {
           onNextSpeakerPhoto={handleNextSpeakerPhoto}
         />
 
-        <aside
-          className="min-h-0 grid overflow-auto border-l border-[#e5e7eb]"
-          style={{ background: "white", gridTemplateRows: sidebarRows }}
-        >
+        <Footer
+          participantCount={state.participants.length}
+          sidebarTab={sidebarTab}
+          onTabChange={setSidebarTab}
+          micMuted={state.participants[0]?.muted ?? false}
+          onMicToggle={() => {
+            setState((prev) => {
+              const updated = [...prev.participants];
+              if (updated[0]) {
+                updated[0] = { ...updated[0], muted: !updated[0].muted };
+              }
+              return { ...prev, participants: updated };
+            });
+          }}
+          videoOff={!(state.participants[0]?.video ?? false)}
+          onVideoToggle={() => {
+            setState((prev) => {
+              const updated = [...prev.participants];
+              if (updated[0]) {
+                updated[0] = { ...updated[0], video: !updated[0].video };
+              }
+              return { ...prev, participants: updated };
+            });
+          }}
+        />
+      </div>
+
+      <aside
+        className="w-[340px] shrink-0 min-h-0 grid overflow-hidden border-l border-[#e5e7eb]"
+        style={{ background: "white", gridTemplateRows: sidebarRows }}
+      >
           {sidebarTab === "chat" ? (
             <MeetingChatPanel
               messages={meetingChat}
@@ -407,33 +433,6 @@ function ReunionContent() {
             </>
           )}
         </aside>
-      </div>
-
-      <Footer
-        participantCount={state.participants.length}
-        sidebarTab={sidebarTab}
-        onTabChange={setSidebarTab}
-        micMuted={state.participants[0]?.muted ?? false}
-        onMicToggle={() => {
-          setState((prev) => {
-            const updated = [...prev.participants];
-            if (updated[0]) {
-              updated[0] = { ...updated[0], muted: !updated[0].muted };
-            }
-            return { ...prev, participants: updated };
-          });
-        }}
-        videoOff={!(state.participants[0]?.video ?? false)}
-        onVideoToggle={() => {
-          setState((prev) => {
-            const updated = [...prev.participants];
-            if (updated[0]) {
-              updated[0] = { ...updated[0], video: !updated[0].video };
-            }
-            return { ...prev, participants: updated };
-          });
-        }}
-      />
 
       <EditorModal
         open={editorOpen}

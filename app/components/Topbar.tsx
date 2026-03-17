@@ -4,8 +4,8 @@ import { MinimizeIcon, MaximizeIcon, CloseIcon } from "./Icons";
 
 export default function Topbar() {
   return (
-    <div className="flex items-center justify-between px-3.5 text-xs border-b border-white/4"
-         style={{ background: "#262626", color: "#f5f7fa", height: 39 }}>
+    <div className="flex items-center justify-between px-3.5 text-xs border-b border-black md:border-transparent"
+         style={{ background: "#000000", color: "#f5f7fa", height: 39 }}>
       {/* Left */}
       <div className="flex items-center gap-3">
         <div className="flex flex-col leading-none font-semibold tracking-tight">
