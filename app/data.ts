@@ -129,3 +129,68 @@ export function getTimeNow(): string {
     minute: "2-digit",
   });
 }
+
+/**
+ * Transforms "SURNAME1 SURNAME2 GIVEN NAMES" into "GIVEN NAMES SURNAME1 SURNAME2"
+ * Handles some common composite surnames (DE LA, DE, LA, DEL, LOS).
+ */
+export function formatMexicanName(fullName: string | null | undefined): string {
+  if (!fullName) return "";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 2) return fullName.trim();
+
+  const compositePrefixes = ["DE", "LA", "DEL", "LOS", "SAN", "SANTA"];
+  let surname1End = 0;
+  
+  // Try to identify first surname
+  if (compositePrefixes.includes(parts[0].toUpperCase()) && parts.length > 2) {
+    if (parts[0].toUpperCase() === "DE" && parts[1].toUpperCase() === "LA" && parts.length > 3) {
+      surname1End = 2; // DE LA X
+    } else {
+      surname1End = 1; // DE X, LA X, etc.
+    }
+  } else {
+    surname1End = 0; // X
+  }
+
+  // Second surname usually follows the first surname's last part
+  let surname2End = surname1End + 1;
+  if (parts.length > surname2End + 1 && compositePrefixes.includes(parts[surname2End + 1].toUpperCase())) {
+     // Second surname is also composite? (very rare but possible, e.g., "Perez De La Fuente")
+     // For simplicity, we usually take the first two "Surname blocks"
+  }
+
+  // A simpler approach for the user: if it's "APELLIDOS NOMBRES", usually it's exactly 2 apellidos.
+  // Unless composite. Let's try a heuristic:
+  // If we find 4+ words, and the user wants "Nombre Apellidos", we assume the first 2 are Surnames.
+  
+  // However, names like "DE PAZ RAMOS" should be "RAMOS" as 2nd? No.
+  // In Mexican databases, if they are "DE LA CRUZ RAMOS JUAN", s1="DE LA CRUZ", s2="RAMOS", n="JUAN".
+  
+  // Let's use a simpler heuristic as requested: swap the first two word-blocks with the rest.
+  // We'll define a word-block as a single word OR a composite (DE LA ..., DE ...)
+  
+  const blocks: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i].toUpperCase();
+    if (compositePrefixes.includes(p) && i + 1 < parts.length) {
+      if (p === "DE" && parts[i+1].toUpperCase() === "LA" && i + 2 < parts.length) {
+        blocks.push(parts.slice(i, i + 3).join(" "));
+        i += 2;
+      } else {
+        blocks.push(parts.slice(i, i + 2).join(" "));
+        i += 1;
+      }
+    } else {
+      blocks.push(parts[i]);
+    }
+  }
+
+  if (blocks.length <= 2) return fullName.trim();
+  
+  // Surnames are the first two blocks
+  const surnames = blocks.slice(0, 2).join(" ");
+  const names = blocks.slice(2).join(" ");
+  
+  return `${names} ${surnames}`;
+}

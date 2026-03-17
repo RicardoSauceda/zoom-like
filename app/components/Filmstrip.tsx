@@ -27,16 +27,22 @@ export default function Filmstrip({ participants, onParticipantClick }: Filmstri
           <div
             key={p.name + i}
             onClick={() => onParticipantClick(originalIndex)}
-            className={`relative overflow-hidden rounded-lg cursor-pointer border border-white/6 bg-[#090909] ${
+            className={`relative overflow-hidden rounded-lg cursor-pointer border border-white/6 bg-[rgb(26,26,26)] ${
               p.speaking ? "shadow-[inset_0_0_0_2px_#00c853]" : ""
             }`}
           >
-            {/* Background avatar or solid color */}
+            {/* Background initials avatar */}
             <div
-              className="absolute inset-0 flex items-center justify-center text-white text-4xl font-bold"
-              style={{ background: p.img ? "transparent" : p.color }}
+              className="absolute inset-0 flex items-center justify-center text-white"
             >
-              {!p.img && getInitials(p.name)}
+              {!p.img && !p.video && (
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg"
+                  style={{ background: p.color }}
+                >
+                  {getInitials(p.name)}
+                </div>
+              )}
             </div>
 
             {p.img && (

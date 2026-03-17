@@ -61,7 +61,7 @@ export default function MeetingChatPanel({
 
   return (
     <section
-      className="overflow-hidden rounded-[14px] border border-[#dcdfe4] grid min-h-0"
+      className="overflow-hidden grid min-h-0"
       style={{
         gridTemplateRows: "46px 1fr 68px",
         background: "white",

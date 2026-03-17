@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { formatMexicanName } from "@/app/data";
 
 export async function GET(
   _req: Request,
@@ -30,12 +31,14 @@ export async function GET(
         tc.inicio::text,
         tc.termino::text,
         tc.horas,
-        tc.nombre   AS instructor_nombre,
+        -- Priorizar el nombre de la tabla instructor
+        COALESCE(NULLIF(TRIM(CONCAT(ins.nombre, ' ', ins."apellidoPaterno", ' ', ins."apellidoMaterno")), ''), tc.nombre) AS instructor_nombre,
         tc.curp     AS curp_instructor,
         tc.hombre,
         tc.mujer,
         tc.tcapacitacion
        FROM tbl_cursos tc
+       LEFT JOIN instructor ins ON tc.curp = ins.curp
        WHERE tc.folio_grupo = $1
        LIMIT 1`,
       [folio]
@@ -45,7 +48,12 @@ export async function GET(
       return NextResponse.json({ error: "Curso no encontrado" }, { status: 404 });
     }
 
-    const curso = cursoRes.rows[0];
+    const rawCurso = cursoRes.rows[0];
+    const curso = {
+      ...rawCurso,
+      // Aplicamos formatMexicanName al instructor como precaución de fallback
+      instructor_nombre: formatMexicanName(rawCurso.instructor_nombre)
+    };
 
     // Inscritos del grupo
     const inscritosRes = await client.query<{
@@ -76,9 +84,15 @@ export async function GET(
       [folio]
     );
 
+    // Los alumnos siguen necesitando la lógica JS porque tbl_alumnos no tiene nombres separados o no se especificó su uso
+    const inscritos = inscritosRes.rows.map(ins => ({
+      ...ins,
+      alumno: formatMexicanName(ins.alumno)
+    }));
+
     return NextResponse.json({
       curso,
-      inscritos: inscritosRes.rows,
+      inscritos,
     });
   } catch (err) {
     console.error("[api/cursos/[folio]]", err);

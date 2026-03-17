@@ -51,7 +51,7 @@ function buildParticipants(
     curso.instructor_nombre?.trim() || "Instructor";
   participants.push({
     name: hostName,
-    role: "(Anfitrión)",
+    role: "(Anfitrión, yo)",
     img: "",
     muted: false,
     video: true,
@@ -377,8 +377,8 @@ function ReunionContent() {
         />
 
         <aside
-          className="min-h-0 grid gap-2 p-2 overflow-auto border-l border-[#e5e7eb]"
-          style={{ background: "#f4f5f7", gridTemplateRows: sidebarRows }}
+          className="min-h-0 grid overflow-auto border-l border-[#e5e7eb]"
+          style={{ background: "white", gridTemplateRows: sidebarRows }}
         >
           {sidebarTab === "chat" ? (
             <MeetingChatPanel

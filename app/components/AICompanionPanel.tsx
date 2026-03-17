@@ -80,7 +80,7 @@ export default function AICompanionPanel({
 
   return (
     <section
-      className="panel ai overflow-hidden rounded-[14px] border border-[#dcdfe4] grid min-h-0"
+      className="panel ai overflow-hidden grid min-h-0"
       style={{
         gridTemplateRows: "46px 58px 1fr 50px 88px",
         background: "white",

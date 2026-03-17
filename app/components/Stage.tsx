@@ -37,7 +37,7 @@ export default function Stage({ speaker }: StageProps) {
         />
       ) : (
         /* Fallback: large initials avatar */
-        <div className="w-full h-full flex items-center justify-center bg-[#1a1d23]">
+        <div className="w-full h-full flex items-center justify-center bg-[rgb(26,26,26)]">
           <div
             className="w-36 h-36 rounded-full flex items-center justify-center text-5xl font-bold text-white select-none shadow-lg"
             style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
