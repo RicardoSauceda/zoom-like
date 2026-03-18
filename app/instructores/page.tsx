@@ -36,13 +36,13 @@ function InstructoresContent() {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       const curpTag = ins.curp.toUpperCase().trim();
-      const rootName = `FOTOS_${curpTag}`;
-      const root = zip.folder(rootName);
+      // Carpeta raíz = solo el CURP
+      const root = zip.folder(curpTag);
       
       if (root) {
         ins.cursos_json.forEach((c) => {
-          const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA") 
-            ? "A_DISTANCIA" 
+          const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA")
+            ? "EN_LINEA"
             : "PRESENCIAL";
             
           const folio = (c.folio_grupo || "SIN_FOLIO").trim();
@@ -50,7 +50,8 @@ function InstructoresContent() {
             .replace(/[\/\\?%*:|"<>]/g, "_")
             .substring(0, 80);
           
-          root.folder(`${modalidad}_${folio}_${cleanCurso}`);
+          // Estructura: {FOLIO_GRUPO}_{PRESENCIAL|EN_LINEA}_{NOMBRE_CURSO}
+          root.folder(`${folio}_${modalidad}_${cleanCurso}`);
         });
       }
 
@@ -58,8 +59,9 @@ function InstructoresContent() {
       const url = URL.createObjectURL(content);
       const a = document.createElement("a");
       a.href = url;
-      const cleanName = ins.nombre.trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 50).replace(/\s+/g, "_");
-      a.download = `${cleanName}_${ins.curp}.zip`;
+      // Nombre del archivo: FOTOS_{NOMBRE}_{CURP}.zip
+      const cleanName = ins.nombre.trim().replace(/[\/\\?%*:|"<>]/g, "_").replace(/\s+/g, "_").substring(0, 50);
+      a.download = `FOTOS_${cleanName}_${curpTag}.zip`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {

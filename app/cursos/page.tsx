@@ -127,8 +127,8 @@ function CursosContent() {
       
       cursos.forEach((c) => {
         const curp = (c.curp_instructor || "SIN_CURP").toUpperCase().trim();
-        const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA") 
-          ? "A_DISTANCIA" 
+        const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA")
+          ? "EN_LINEA"
           : "PRESENCIAL";
           
         const folio = (c.folio_grupo || "SIN_FOLIO").trim();
@@ -136,8 +136,8 @@ function CursosContent() {
           .replace(/[\/\\?%*:|"<>]/g, "_")
           .substring(0, 80);
         
-        // Structure: FOTOS_{CURP}/{MODALIDAD}_{FOLIO}_{CURSO}
-        zip.folder(`FOTOS_${curp}/${modalidad}_${folio}_${cleanCurso}`);
+        // ZIP: FOTO_{CURP} / {CURP} / {FOLIO}_{PRESENCIAL|EN_LINEA}_{CURSO}
+        zip.folder(`FOTO_${curp}/${curp}/${folio}_${modalidad}_${cleanCurso}`);
       });
 
       const content = await zip.generateAsync({ type: "blob" });
