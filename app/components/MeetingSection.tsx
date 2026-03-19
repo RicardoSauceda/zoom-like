@@ -54,7 +54,7 @@ export default function MeetingSection({
         {/* Stage — double-click to toggle filmstrip or change photo */}
         <div
           data-testid="meeting-stage"
-          className="min-w-0 min-h-0 flex justify-center items-stretch pt-2.5 cursor-pointer select-none"
+          className="min-w-0 min-h-0 flex justify-center items-stretch pt-2.5 cursor-pointer select-none overflow-hidden"
           style={{ background: "#030405" }}
           onDoubleClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();

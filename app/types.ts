@@ -20,6 +20,7 @@ export interface ChatMessage {
 export interface Speaker {
   name: string;
   img: string;
+  role?: string;
 }
 
 export interface AppState {

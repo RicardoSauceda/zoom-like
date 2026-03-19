@@ -139,7 +139,7 @@ function ReunionContent() {
 
         setState({
           title: c.curso,
-          speaker: { name: hostName, img: instructorImg },
+          speaker: { name: hostName, img: instructorImg, role: "(Anfitrión, yo)" },
           participants,
           chat: [],
         });
@@ -224,7 +224,15 @@ function ReunionContent() {
   // ── Editor ───────────────────────────────────────────────────────
   const handleApplyEditor = useCallback(
     (title: string, speakerName: string, speakerImg: string) => {
-      setState((prev) => ({ ...prev, title, speaker: { name: speakerName, img: speakerImg } }));
+      setState((prev) => {
+        const matchingPart = prev.participants.find((p) => p.name === speakerName);
+        const role = matchingPart ? matchingPart.role : (speakerName === prev.speaker.name ? prev.speaker.role : "");
+        return { 
+          ...prev, 
+          title, 
+          speaker: { name: speakerName, img: speakerImg, role } 
+        };
+      });
       setEditorOpen(false);
     },
     []
@@ -265,7 +273,11 @@ function ReunionContent() {
           ...prev,
           participants: updated,
           speaker: makeSpeaker
-            ? { name: updated[index].name, img: updated[index].img || prev.speaker.img }
+            ? { 
+                name: updated[index].name, 
+                img: updated[index].img || prev.speaker.img,
+                role: updated[index].role
+              }
             : prev.speaker,
         };
       });

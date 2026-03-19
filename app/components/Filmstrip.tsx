@@ -50,7 +50,7 @@ export default function Filmstrip({ participants, onParticipantClick }: Filmstri
               <img
                 src={p.img}
                 alt={p.name}
-                className="w-full h-full object-cover block"
+                className={`w-full h-full object-cover block ${(p.name === "ICATECH" || p.role.includes("yo")) ? "-scale-x-100" : ""}`}
               />
             )}
 
