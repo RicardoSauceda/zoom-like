@@ -27,29 +27,49 @@ Genera 3 capturas (`img1.jpg`, `img2.jpg`, `img3.jpg`) por cada folió de grupo 
 
 ### Modos de Ejecución
 
-El script tiene dos modalidades de ejecución detectando intuitivamente los parámetros que le pasas por consola:
+El script detecta automáticamente el modo según los argumentos recibidos:
+
+| Argumentos | Modo |
+|---|---|
+| Solo un CURP | **Modo CURP** — todos los folios de ese instructor |
+| CURP + Folio (strings) | **Modo Individual** — una sola sala |
+| Número + Número | **Modo Lotes (Batch)** — rango del grid |
+
+---
+
+#### 🆕 Modo CURP — Todos los folios de un instructor
+
+Pasa únicamente el CURP del instructor. El script consultará la API (`/api/cursos`), filtrará todos los grupos donde `curp_instructor` coincida y procesará cada sala de forma secuencial.
+
+```bash
+npx ts-node scripts/tomar-capturas.ts "VECC910508MCSLHN02"
+```
+
+---
 
 #### Modo Individual
-Si deseas capturar exclusivamente y de forma directa un solo curso saltándote por completo la pantalla del grid y pasando directamente a `/reunion?folio=XX`. 
 
-Provee un CURP y un Folio en String:
-```bash
-npx ts-node scripts/tomar-capturas.ts "TU_CURP_AQUI" "FOLIO_DE_TU_GRUPO"
-```
-**Ejemplo:**
+Navega directamente a una sala específica. Provee el CURP del instructor y el Folio del grupo:
+
 ```bash
 npx ts-node scripts/tomar-capturas.ts "VECC910508MCSLHN02" "7X-251453"
 ```
 
-#### Modo por Lotes (Batch Mode / Paralelismo)
-Si posees miles de cursos, puedes abrir múltiples consolas/terminales en paralelo. El script leerá la página `/cursos` limitándose lógicamente a índices puntuales permitiéndole hacer *scrapping* y avanzar automáticamente regresando al inicio luego de cada sala.
+---
 
-Provee un índice inicial numérico y un límite final numérico:
+#### Modo por Lotes (Batch)
+
+Para procesar miles de cursos en paralelo, abre múltiples terminales y asigna rangos de índice:
+
 ```bash
-# Terminal 1 - Procesará grupos mostrados desde la posición 1 a la 100
+# Terminal 1
 npx ts-node scripts/tomar-capturas.ts 1 100
 
-# Terminal 2 - Procesará grupos mostrados del 101 al 200...
+# Terminal 2
 npx ts-node scripts/tomar-capturas.ts 101 200
+
+# Terminal 3
+npx ts-node scripts/tomar-capturas.ts 201 300
 ```
-> **Nota de uso Lotes:** El script extraerá el CURP y el Folio directamente buscando en el DOM de la tarjeta renderizada en la URL (`/cursos?ini=X&fin=Y`).
+
+> **Nota:** En modo lotes, el CURP se extrae automáticamente desde el DOM de la tarjeta en el grid de `/cursos?ini=X&fin=Y`.

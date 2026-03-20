@@ -76,9 +76,9 @@ export default function Footer({ participantCount, sidebarTab, onTabChange, micM
 
   return (
     <div
-      className="grid items-center px-2.5 border-t border-white/6"
+      className="grid items-center px-2.5 border-t border-black md:border-transparent"
       style={{
-        background: "#050505",
+        background: "#000000",
         gridTemplateColumns: "1fr auto 1fr",
         height: 66,
       }}

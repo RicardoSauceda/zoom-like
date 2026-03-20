@@ -16,28 +16,30 @@ import HiddenActionModal from "../components/HiddenActionModal";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Resolves the instructor photo URL from /FOTOS_{CURP}/{MODALIDAD}_{folio_grupo}_{curso}/img{index}.{ext}.
- * Tries jpg → jpeg → png → webp. Returns the first one that responds 200, or "" if none.
+ * Fetches the ordered list of photo URLs for a given instructor/sala from the API.
+ * Returns [] if the directory doesn't exist or has no images.
  */
-async function resolveInstructorImg(curp: string | null, folio: string | null, cursoNombre: string | null, tcapacitacion: string | null, index: number): Promise<string> {
-  if (!curp || !folio || !cursoNombre) return "";
-  const c = curp.toUpperCase().trim();
-  const f = folio.trim();
-  const modalidad = (tcapacitacion || "").toUpperCase().includes("DISTANCIA") ? "A_DISTANCIA" : "PRESENCIAL";
-  
-  // Sanitización simple para evitar caracteres inválidos en rutas
-  const cleanCurso = cursoNombre.trim().replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
-  
-  for (const ext of ["jpg", "jpeg", "png", "webp"]) {
-    const url = `/instructores/FOTOS_${c}/${modalidad}_${f}_${cleanCurso}/img${index}.${ext}`;
-    try {
-      const res = await fetch(url, { method: "HEAD" });
-      if (res.ok) return url;
-    } catch {
-      // network error → skip
-    }
+async function fetchInstructorFotos(
+  curp: string | null,
+  folio: string | null,
+  cursoNombre: string | null,
+  tcapacitacion: string | null
+): Promise<string[]> {
+  if (!curp || !folio || !cursoNombre) return [];
+  const params = new URLSearchParams({
+    curp,
+    folio,
+    curso: cursoNombre,
+    tcapacitacion: tcapacitacion ?? "",
+  });
+  try {
+    const res = await fetch(`/api/fotos-instructor?${params}`);
+    if (!res.ok) return [];
+    const data: { fotos: string[]; base: string } = await res.json();
+    return data.fotos.map((f) => `${data.base}/${f}`);
+  } catch {
+    return [];
   }
-  return "";
 }
 
 function buildParticipants(
@@ -113,7 +115,8 @@ function ReunionContent() {
   const [sidebarTab, setSidebarTab] = useState<"participants" | "chat">("participants");
   const [meetingChat, setMeetingChat] = useState<ChatMessage[]>(MEETING_CHAT_MOCK);
   const [hiddenActionIdx, setHiddenActionIdx] = useState<number | null>(null);
-  const [photoIndex, setPhotoIndex] = useState<number>(1);
+  const [photoIndex, setPhotoIndex] = useState<number>(0); // 0-based index into photoList
+  const [photoList, setPhotoList] = useState<string[]>([]); // ordered URLs
 
   // ── Cargar datos del curso desde la API ──────────────────────────
   useEffect(() => {
@@ -134,8 +137,11 @@ function ReunionContent() {
         const hostName = c.instructor_nombre?.trim() || "Instructor";
         const participants = buildParticipants(c, i);
 
-        // Resolve instructor photo from /FOTOS_{CURP}/{MODALIDAD}_{folio}_{curso}/img1
-        const instructorImg = await resolveInstructorImg(c.curp_instructor ?? null, c.folio_grupo, c.curso, c.tcapacitacion ?? null, 1);
+        // Resolve ordered list of instructor photos
+        const fotos = await fetchInstructorFotos(c.curp_instructor ?? null, c.folio_grupo, c.curso, c.tcapacitacion ?? null);
+        setPhotoList(fotos);
+        setPhotoIndex(0);
+        const instructorImg = fotos[0] ?? "";
 
         setState({
           title: c.curso,
@@ -210,16 +216,15 @@ function ReunionContent() {
   }, []);
 
   // ── Fotos de instructor ──────────────────────────────────────────
-  const handleNextSpeakerPhoto = useCallback(async () => {
-    if (!curso) return;
-    const nextIdx = photoIndex >= 3 ? 1 : photoIndex + 1;
+  const handleNextSpeakerPhoto = useCallback(() => {
+    if (!photoList.length) return;
+    const nextIdx = (photoIndex + 1) % photoList.length;
     setPhotoIndex(nextIdx);
-    const newImg = await resolveInstructorImg(curso.curp_instructor ?? null, curso.folio_grupo, curso.curso, curso.tcapacitacion ?? null, nextIdx);
     setState((prev) => ({
       ...prev,
-      speaker: { ...prev.speaker, img: newImg },
+      speaker: { ...prev.speaker, img: photoList[nextIdx] },
     }));
-  }, [curso, photoIndex]);
+  }, [photoList, photoIndex]);
 
   // ── Editor ───────────────────────────────────────────────────────
   const handleApplyEditor = useCallback(

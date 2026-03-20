@@ -30,15 +30,15 @@ export default function MeetingSection({
       className="flex-1 w-full h-full min-w-0 min-h-0 grid"
       style={{
         background: "#07090d",
-        gridTemplateRows: "58px 1fr",
+        gridTemplateRows: "39px 1fr",
       }}
     >
       {/* Meeting Header */}
       <div
-        className="flex items-center justify-end px-4 text-xs text-[#f5f7fa] border-b border-white/4"
-        style={{ background: "linear-gradient(180deg,#0d0f12 0%,#0b0d10 100%)" }}
+        className="flex items-center justify-end px-4 text-xs text-[#f5f7fa] border-b border-black md:border-transparent"
+        style={{ background: "#000000", height: 39 }}
       >
-        <div className="h-[30px] px-3 rounded-lg inline-flex items-center bg-white/5 border border-white/8 text-[#eef2f8] whitespace-nowrap">
+        <div className="h-[30px] px-3 rounded-lg inline-flex items-center text-[#eef2f8] whitespace-nowrap font-medium text-[13px]">
           {title}
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function MeetingSection({
         {/* Stage — double-click to toggle filmstrip or change photo */}
         <div
           data-testid="meeting-stage"
-          className="min-w-0 min-h-0 flex justify-center items-stretch pt-2.5 cursor-pointer select-none overflow-hidden"
+          className="min-w-0 min-h-0 flex justify-center items-stretch cursor-pointer select-none overflow-hidden"
           style={{ background: "#030405" }}
           onDoubleClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();

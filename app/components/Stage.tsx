@@ -25,30 +25,29 @@ export default function Stage({ speaker }: StageProps) {
   const showPhoto = speaker.img && !imgError;
 
   return (
-    <div className="w-full h-full relative min-w-0 min-h-0 overflow-hidden bg-black flex items-center justify-center p-4">
-      <div className="relative w-full h-full max-w-full max-h-full aspect-video overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-[rgb(20,20,20)] flex items-center justify-center border border-white/5">
-        {showPhoto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={speaker.img}
-            src={speaker.img}
-            alt="Ponente"
-            className={`w-full h-full object-contain block ${speaker.role?.includes("yo") ? "-scale-x-100" : ""}`}
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[rgb(26,26,26)]">
-            <div
-              className="w-[100px] h-[100px] rounded-lg flex items-center justify-center text-[40px] font-medium text-white select-none"
-              style={{ background: "#719E37" }} // Use a solid green color closer to original Zoom for testing, or use actual speaker color
-            >
-              {getInitials(speaker.name)}
-            </div>
+    <div className="w-full h-full relative min-w-0 min-h-0 overflow-hidden bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.025)]">
+      {showPhoto ? (
+        <img
+          key={speaker.img}
+          src={speaker.img}
+          alt="Ponente"
+          className={`absolute inset-0 w-full h-full object-cover block ${speaker.role?.includes("yo") ? "-scale-x-100" : ""}`}
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        /* Fallback: large initials avatar */
+        <div className="w-full h-full flex items-center justify-center bg-[rgb(26,26,26)]">
+          <div
+            className="w-[100px] h-[100px] rounded-lg flex items-center justify-center text-[40px] font-medium text-white select-none"
+            style={{ background: "#719E37" }}
+          >
+            {getInitials(speaker.name)}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Name label - now inside the video box for better alignment */}
-        <div className="absolute left-3 bottom-3 h-6 px-2.5 bg-black/60 backdrop-blur-md rounded-full inline-flex items-center gap-1.5 text-[11px] text-white z-10 border border-white/10">
+      {/* Name label */}
+      <div className="absolute left-3 bottom-3 h-6 px-2.5 bg-black rounded-full inline-flex items-center gap-1.5 text-[11px] text-white z-10">
           <svg className="w-3.5 h-3.5" viewBox="0 0 20 20">
             <path
               fill="currentColor"
@@ -56,7 +55,6 @@ export default function Stage({ speaker }: StageProps) {
             />
           </svg>
           <span>{speaker.name}</span>
-        </div>
       </div>
     </div>
   );
