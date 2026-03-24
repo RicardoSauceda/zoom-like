@@ -8,7 +8,7 @@ const EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
  * GET /api/fotos-instructor?curp=XXXX&folio=YYYY&curso=ZZZZ&tcapacitacion=AAAA
  *
  * Returns the ordered list of photo filenames (without path) found in the
- * public/instructores/FOTOS_{CURP}/{MODALIDAD}_{folio}_{curso}/ directory.
+ * public/instructores/FOTOS_{CURP}/{folio}_{MODALIDAD}_{curso}/ directory.
  *
  * Response: { fotos: string[], base: string }
  *   - fotos: sorted filenames, eg. ["foto_A.jpg", "img2.jpeg", "retrato.png"]
@@ -25,12 +25,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "curp, folio y curso son obligatorios" }, { status: 400 });
   }
 
-  const modalidad = tcap.includes("DISTANCIA") ? "A_DISTANCIA" : "PRESENCIAL";
-  const cleanCurso = curso.replace(/[\/\\?%*:|"<>]/g, "_").substring(0, 80);
-  const dirName = `${modalidad}_${folio}_${cleanCurso}`;
-  const base = `/instructores/FOTOS_${curp}/${dirName}`;
+  // Iterar FOTOS_CURP y buscar una carpeta que contenga el folio (para evitar problemas de string encoding o sufijos/prefijos inexactos)
+  const basePath = path.join(process.cwd(), "public", "instructores", `FOTOS_${curp}`);
+  let matchedDir = "";
+  
+  try {
+    const carpetas = fs.readdirSync(basePath);
+    matchedDir = carpetas.find(c => c.includes(folio)) || "";
+  } catch {
+    // FOTOS_CURP no existe
+  }
 
-  const absDir = path.join(process.cwd(), "public", "instructores", `FOTOS_${curp}`, dirName);
+  if (!matchedDir) {
+    return NextResponse.json({ fotos: [], base: "" });
+  }
+
+  const absDir = path.join(basePath, matchedDir);
+  const base = `/instructores/FOTOS_${curp}/${encodeURIComponent(matchedDir)}`;
 
   let fotos: string[] = [];
   try {
