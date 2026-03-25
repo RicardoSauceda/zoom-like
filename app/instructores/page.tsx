@@ -31,16 +31,19 @@ function InstructoresContent() {
       .finally(() => setLoading(false));
   }, []);
 
+  const [downloadingCurp, setDownloadingCurp] = useState<string | null>(null);
+
   const handleDownloadInstructorStructure = async (ins: InstructorData) => {
+    if (downloadingCurp) return;
     try {
+      setDownloadingCurp(ins.curp);
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       const curpTag = ins.curp.toUpperCase().trim();
-      // Carpeta raíz = solo el CURP
       const root = zip.folder(curpTag);
       
       if (root) {
-        ins.cursos_json.forEach((c) => {
+        const creationPromises = ins.cursos_json.map(async (c) => {
           const modalidad = (c.tcapacitacion || "").toUpperCase().includes("DISTANCIA")
             ? "EN_LINEA"
             : "PRESENCIAL";
@@ -50,9 +53,26 @@ function InstructoresContent() {
             .replace(/[\/\\?%*:|"<>]/g, "_")
             .substring(0, 80);
           
-          // Estructura: {FOLIO_GRUPO}_{PRESENCIAL|EN_LINEA}_{NOMBRE_CURSO}
-          root.folder(`${folio}_${modalidad}_${cleanCurso}`);
+          const folderObj = root.folder(`${folio}_${modalidad}_${cleanCurso}`);
+
+          if (folderObj && folio !== "SIN_FOLIO") {
+            try {
+              const res = await fetch(`/api/cursos/${encodeURIComponent(folio)}`);
+              if (res.ok) {
+                const data = await res.json();
+                if (data.inscritos && data.inscritos.length > 0) {
+                  const txt = `[Folio: ${folio} | Curso: ${c.curso}]\n\n` +
+                              data.inscritos.map((inscrito: any, idx: number) => `${idx + 1}. ${inscrito.alumno}`).join('\n');
+                  folderObj.file("lista_alumnos.txt", txt);
+                }
+              }
+            } catch (err) {
+              console.error(`Error fetching inscritos for folio ${folio}:`, err);
+            }
+          }
         });
+
+        await Promise.all(creationPromises);
       }
 
       const content = await zip.generateAsync({ type: "blob" });
@@ -67,6 +87,8 @@ function InstructoresContent() {
     } catch (err) {
       console.error("Error generating ZIP:", err);
       alert("No se pudo generar el archivo ZIP.");
+    } finally {
+      setDownloadingCurp(null);
     }
   };
 
@@ -165,6 +187,7 @@ function InstructoresContent() {
               <InstructorCard 
                 key={ins.curp} 
                 instructor={ins} 
+                isDownloading={downloadingCurp === ins.curp}
                 onDownload={() => handleDownloadInstructorStructure(ins)} 
               />
             ))}
@@ -175,7 +198,7 @@ function InstructoresContent() {
   );
 }
 
-function InstructorCard({ instructor, onDownload }: { instructor: InstructorData, onDownload: () => void }) {
+function InstructorCard({ instructor, isDownloading, onDownload }: { instructor: InstructorData, isDownloading: boolean, onDownload: () => void }) {
   return (
     <div
       style={{
@@ -241,16 +264,18 @@ function InstructorCard({ instructor, onDownload }: { instructor: InstructorData
 
       <button
         onClick={onDownload}
+        disabled={isDownloading}
         style={{
           marginTop: "auto",
           padding: "10px",
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: isDownloading ? "transparent" : "rgba(255,255,255,0.06)",
+          border: "1px solid",
+          borderColor: isDownloading ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.1)",
           borderRadius: 10,
-          color: "#e2e8f0",
+          color: isDownloading ? "#64748b" : "#e2e8f0",
           fontSize: 14,
           fontWeight: 600,
-          cursor: "pointer",
+          cursor: isDownloading ? "default" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -258,20 +283,34 @@ function InstructorCard({ instructor, onDownload }: { instructor: InstructorData
           transition: "all 0.2s",
         }}
         onMouseEnter={(e) => {
+          if (isDownloading) return;
           e.currentTarget.style.background = "#2d8cff";
           e.currentTarget.style.borderColor = "#2d8cff";
           e.currentTarget.style.color = "white";
         }}
         onMouseLeave={(e) => {
+          if (isDownloading) return;
           e.currentTarget.style.background = "rgba(255,255,255,0.06)";
           e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           e.currentTarget.style.color = "#e2e8f0";
         }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        Estructura ZIP
+        {isDownloading ? (
+          <>
+            <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Procesando...
+          </>
+        ) : (
+          <>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Estructura ZIP
+          </>
+        )}
       </button>
     </div>
   );
